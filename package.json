@@ -1,38 +1,62 @@
 {
-  "name": "given-names",
-  "version": "0.1.0",
-  "private": true,
+  "name": "gesture-cards-stack",
+  "version": "1.0.0",
+  "main": "src/index.tsx",
   "dependencies": {
-    "@testing-library/jest-dom": "^5.16.4",
-    "@testing-library/react": "^13.2.0",
-    "@testing-library/user-event": "^13.5.0",
-    "react": "^18.1.0",
-    "react-dom": "^18.1.0",
-    "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "@react-spring/web": "^9.4.5-beta.0",
+    "@use-gesture/react": "latest",
+    "antd": "^4.21.3",
+    "assert": "^2.0.0",
+    "async_hooks": "^1.0.0",
+    "autoprefixer": "^9",
+    "browserify-fs": "^1.0.0",
+    "browserify-zlib": "^0.2.0",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.0",
+    "customize-cra": "^1.0.0",
+    "gapi-script": "^1.2.0",
+    "google-spreadsheet": "^3.3.0",
+    "https-browserify": "^1.0.0",
+    "net-browserify": "^0.2.4",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
+    "postcss": "^7",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0",
+    "react-google-login": "^5.2.2",
+    "react-icons": "^4.3.1",
+    "react-router": "^5.0.1",
+    "react-router-dom": "^5.0.1",
+    "react-scripts": "^4.0.0",
+    "simple-statistics": "^7.7.5",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat",
+    "the-noun-project": "^2.1.0",
+    "tls-browserify": "^0.2.2",
+    "url": "^0.11.0",
+    "util": "^0.12.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
     "eject": "react-scripts eject"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "browser": {
+    "path": false,
+    "os": false,
+    "fs": false,
+    "child_process": false
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "resolutions": {},
+  "devDependencies": {
+    "react-app-rewired": "^2.2.1"
   }
 }
