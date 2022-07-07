@@ -2,6 +2,7 @@
   "name": "gesture-cards-stack",
   "version": "1.0.0",
   "main": "src/index.tsx",
+  "homepage": "./",
   "dependencies": {
     "@react-spring/web": "^9.4.5-beta.0",
     "@use-gesture/react": "latest",
