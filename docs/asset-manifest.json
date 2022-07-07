@@ -1,24 +1,24 @@
 {
   "files": {
-    "main.css": "/static/css/main.721a7fe8.chunk.css",
-    "main.js": "/static/js/main.d68b2426.chunk.js",
-    "main.js.map": "/static/js/main.d68b2426.chunk.js.map",
-    "runtime-main.js": "/static/js/runtime-main.3c84b385.js",
-    "runtime-main.js.map": "/static/js/runtime-main.3c84b385.js.map",
-    "static/css/2.558bff19.chunk.css": "/static/css/2.558bff19.chunk.css",
-    "static/js/2.44520a03.chunk.js": "/static/js/2.44520a03.chunk.js",
-    "static/js/2.44520a03.chunk.js.map": "/static/js/2.44520a03.chunk.js.map",
-    "index.html": "/index.html",
-    "static/css/2.558bff19.chunk.css.map": "/static/css/2.558bff19.chunk.css.map",
-    "static/css/main.721a7fe8.chunk.css.map": "/static/css/main.721a7fe8.chunk.css.map",
-    "static/js/2.44520a03.chunk.js.LICENSE.txt": "/static/js/2.44520a03.chunk.js.LICENSE.txt",
-    "static/media/thumbs-down-crop.c73a4d3c.svg": "/static/media/thumbs-down-crop.c73a4d3c.svg",
-    "static/media/thumbs-up-crop.85d40e44.svg": "/static/media/thumbs-up-crop.85d40e44.svg"
+    "main.css": "./static/css/main.721a7fe8.chunk.css",
+    "main.js": "./static/js/main.d68b2426.chunk.js",
+    "main.js.map": "./static/js/main.d68b2426.chunk.js.map",
+    "runtime-main.js": "./static/js/runtime-main.80da87b8.js",
+    "runtime-main.js.map": "./static/js/runtime-main.80da87b8.js.map",
+    "static/css/2.558bff19.chunk.css": "./static/css/2.558bff19.chunk.css",
+    "static/js/2.4a15f70e.chunk.js": "./static/js/2.4a15f70e.chunk.js",
+    "static/js/2.4a15f70e.chunk.js.map": "./static/js/2.4a15f70e.chunk.js.map",
+    "index.html": "./index.html",
+    "static/css/2.558bff19.chunk.css.map": "./static/css/2.558bff19.chunk.css.map",
+    "static/css/main.721a7fe8.chunk.css.map": "./static/css/main.721a7fe8.chunk.css.map",
+    "static/js/2.4a15f70e.chunk.js.LICENSE.txt": "./static/js/2.4a15f70e.chunk.js.LICENSE.txt",
+    "static/media/thumbs-down-crop.c73a4d3c.svg": "./static/media/thumbs-down-crop.c73a4d3c.svg",
+    "static/media/thumbs-up-crop.85d40e44.svg": "./static/media/thumbs-up-crop.85d40e44.svg"
   },
   "entrypoints": [
-    "static/js/runtime-main.3c84b385.js",
+    "static/js/runtime-main.80da87b8.js",
     "static/css/2.558bff19.chunk.css",
-    "static/js/2.44520a03.chunk.js",
+    "static/js/2.4a15f70e.chunk.js",
     "static/css/main.721a7fe8.chunk.css",
     "static/js/main.d68b2426.chunk.js"
   ]
