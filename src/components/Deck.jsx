@@ -96,17 +96,18 @@ function Deck(props) {
 
   // const formatCardInfo = (name) => {
   const formatCardInfo = (name) => {
-    const info = props.cardInfo
+    const info = props?.cardInfo
+    console.log('info', info)
+    let html = info.wikiExtractHtml || ''
+    html = html.replaceAll('\\n', '').replaceAll('\\"', '"')
+    console.log('html', html)
+
     {
       return (
         <div className="Card">
           <div
-            className="pt-4 text-xs extract_html"
-            dangerouslySetInnerHTML={{
-              __html: info.wikiExtractHtml
-                .replaceAll('\\n', '')
-                .replaceAll('\\"', '"'),
-            }}
+            className="pt-4 text-sm extract_html"
+            dangerouslySetInnerHTML={{__html: html}}
           />
           <div className="p-4">
             <table className="w-full">

@@ -1,18 +1,26 @@
-import React, {useContext, useEffect, useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import {FaBan, FaRegStar} from 'react-icons/fa'
 // import givenNamesAll from './assets/givenNames.wiki.json'
-import Deck from './components/Deck'
-import styles from './styles.module.css'
-import {quantileRank} from 'simple-statistics'
-import {client_email, private_key, SHEET_ID} from './const'
-import GSheetInfo from './components/GSheetInfo'
-import GoogleButton from './components/GoogleButton'
-import RadioButtonGroup from './components/RadioButtonGroup'
-import AddItem from './components/AddItem'
-const {GoogleSpreadsheet} = require('google-spreadsheet')
-import AutoCompleteSearch from './components/AutoCompleteSearch'
 import thumbsDownSVG from './assets/thumbs-down-crop.svg'
 import thumbsUpSVG from './assets/thumbs-up-crop.svg'
+import AddName from './components/AddName'
+import AutoCompleteSearch from './components/AutoCompleteSearch'
+import Deck from './components/Deck'
+import GSheetInfo from './components/GSheetInfo'
+import RadioButtonGroup from './components/RadioButtonGroup'
+import {client_email, private_key, SHEET_ID} from './const'
+import styles from './styles.module.css'
+import {getWindowLocationHashParam} from './utils/utils'
+const {GoogleSpreadsheet} = require('google-spreadsheet')
+
+/* 
+ieFlat = ie.map(x => (x.split(',').map(x => x.trim()))).flat()
+a = us.filter(x => !ieFlat.includes(x))
+
+git push https://<User Name>:<Token>@github.com/<User Name>/<Your Repository>.git
+
+git push https://goldenstateofmind:ghp_...qs6@github.com/goldenstateofmind/names.git
+*/
 
 const userNames = ['Jennifer', 'John']
 
@@ -27,7 +35,7 @@ async function asyncAuth() {
   // const sheet = doc.sheetsByTitle['testReadWrite']
   // const sheet = doc.sheetsByIndex[0]
   const rows = await sheet.getRows() // can pass in { limit, offset }
-  // console.log('rows', rows)
+  console.log('rows', rows)
   return {sheet, rows}
 }
 
@@ -56,23 +64,35 @@ export const AppContext = React.createContext({
   // testKeys,
 })
 
-const sheetInfo = {}
-
 export default function App() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [sheetInfo, setSheetInfo] = useState({})
   const [userName, setUserName] = useState(userNames[1])
   const [rowsState, setRowsState] = useState([])
   const [sheetState, setSheetState] = useState([])
+  const [isSearchUnlisted, setIsSearchUnlisted] = useState(false)
+  const [searchText, setSearchText] = useState('')
 
   const names = Object.keys(sheetInfo) ?? []
+  // console.log(' --- names', names)
   const activeName = names?.[activeIndex]
   const numberBirths = Object.values(sheetInfo).map((x) => x.NumberBirths)
   const cardInfo = sheetInfo[names[activeIndex]]
 
   useEffect(() => {
+    const user = getWindowLocationHashParam('user') || userNames[1]
+    setUserName(user)
+    console.log('user', user)
     asyncAuth().then(({sheet, rows}) => {
-      const newRows = rows.filter((x) => x[userName] === '')
+      const newRows = rows.filter((x) => {
+        console.log('x[user]', x[user])
+        // if (x.John !== x.Jennifer) {
+        //   debugger
+        // }
+        return !x[user] || x[user].length === 0
+      })
+      console.log('newRows', newRows)
+      // const newRows = rows.filter((x) => x[userName] === '')
       setRowsState(newRows)
       setSheetState(sheet)
       const tempInfo = {}
@@ -81,7 +101,6 @@ export default function App() {
       })
       setSheetInfo(tempInfo)
       setContextDict((ps) => {
-        console.log('ps', ps)
         return {...ps, givenNames: {...sheetInfo}}
       })
     })
@@ -89,7 +108,7 @@ export default function App() {
     // return () => {
     //   second (callback)
     // }
-  }, [])
+  }, [userName])
   // }, [Object.keys(givenNames)[0]])
 
   const [contextDict, setContextDict] = useState({
@@ -107,9 +126,7 @@ export default function App() {
     console.log(' - updateSheetValues - ', key, userName, value)
     const row = rowsState.find((x) => x.Name === key)
     row[userName] = value
-    console.log('row', row)
     const a = await row.save()
-    console.log('a', a)
   }
 
   const addSheetItem = async ({
@@ -127,10 +144,9 @@ export default function App() {
       Origin: origin,
       'Added By': userName,
     }
-    console.log('row', row)
-
-    const a = await sheetState.addRow(row)
-    console.log('a', a)
+    // const a = await sheetState.addRow(row)
+    sheetState.addRow(row)
+    setSearchText('')
   }
 
   const handleChangeUser = (e) => {
@@ -152,6 +168,7 @@ export default function App() {
       case 'SET_USER':
         const {userName} = payload
         console.log('userName', userName)
+        // Update the url?
         setUserName(userName)
         setContextDict((ps) => {
           console.log('ps', ps)
@@ -163,35 +180,7 @@ export default function App() {
         console.log('AppContext', AppContext)
         console.log('AppContext', AppContext.current)
         updateSheetValues({key, userName, value}) // undefined, Voter 1, "NO"
-
         setActiveIndex((ps) => ps + 1)
-
-        // setContextDict((ps) => {
-        //   setActiveIndex((ps) => ps + 1)
-
-        // const nextGN = {
-        //   ...ps.givenNames,
-        //   [key]: {
-        //     ...ps.givenNames[key],
-        //     [prop]: value,
-        //   },
-        // }
-        // const nextIndex = ps.activeIndex + 1
-        // const nextName = names[nextIndex]
-
-        // setCardInfo((ps) => {
-        //   return givenNames[nextName]
-        // })
-
-        // const nextContext = {
-        //   ...ps,
-        //   givenNames: {...nextGN},
-        //   activeIndex: nextIndex,
-        //   activeName: nextName,
-        //   cardInfo: givenNames[nextName],
-        // }
-        // return nextContext
-        // })
         return
 
       default:
@@ -202,6 +191,13 @@ export default function App() {
   // const remaining = Object.values(contextDict.givenNames).filter(
   //   (x) => x['Voter 1'] === undefined
   // ).length
+
+  const handleSearch = ({isNotListed, searchText}) => {
+    console.log('isNotListed, searchText', isNotListed, searchText)
+    // If isNotListed, show the addItem button
+    setIsSearchUnlisted(isNotListed)
+    setSearchText(searchText)
+  }
 
   return (
     <AppContext.Provider value={{contextDict, dispatchUpdateEvent}}>
@@ -215,17 +211,25 @@ export default function App() {
               handleChange={handleChangeUser}
             />
           </div>
-          <AddItem addSheetItem={addSheetItem} />
-          <AutoCompleteSearch
-            options={names
-              .slice(0)
-              .sort()
-              .map((x) => ({
-                value: x,
-              }))}
-          />
+
+          <div>{/* <ListToWikiExtracts /> */}</div>
+
+          <div className="flex items-start justify-center m-8">
+            <AutoCompleteSearch
+              handleSearch={handleSearch}
+              options={names
+                .slice(0)
+                .sort()
+                .map((x) => ({
+                  value: x,
+                }))}
+            />
+            {isSearchUnlisted && searchText?.length && (
+              <AddName addSheetItem={addSheetItem} name={searchText} />
+            )}
+          </div>
         </header>
-        <main className="grow">
+        <main className="h-full">
           <div
             id="App"
             className={`flex overflow-hidden h-full items-center justify-center ${styles.container}`}
@@ -234,14 +238,32 @@ export default function App() {
 
             <div
               id="Deck-wrapper"
-              className="flex items-center justify-between w-full"
+              className="flex items-end justify-between w-full"
             >
               <div className="w-12 h-12 m-4">
-                <img src={thumbsDownSVG} />
+                <img
+                  src={thumbsDownSVG}
+                  onClick={() =>
+                    dispatchUpdateEvent('UPDATE', {
+                      key: cardInfo.Name,
+                      userName,
+                      value: 'NO',
+                    })
+                  }
+                />
               </div>
               {cardInfo && <Deck cardInfo={cardInfo} />}
               <div className="w-12 h-12 m-4">
-                <img src={thumbsUpSVG} />
+                <img
+                  src={thumbsUpSVG}
+                  onClick={() =>
+                    dispatchUpdateEvent('UPDATE', {
+                      key: cardInfo.Name,
+                      userName,
+                      value: 'YES',
+                    })
+                  }
+                />
               </div>
               {/* <Deck cardInfo={cardInfo} handler={handler} /> */}
             </div>

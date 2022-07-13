@@ -46,6 +46,12 @@ body {
   border: 1.5px solid #777;
 }
 
-/* * {
+/*
+ {
   border: 1px dotted orange;
-} */
+} 
+
+.ant-select-selector {
+  display: flex;
+}
+*/
