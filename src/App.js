@@ -45,7 +45,7 @@ const countItemsWhere = (obj, prop, val) => {
 }
 
 const propsDict = {
-  Pronounced: 'Phonetic',
+  // Pronounced: 'Phonetic',
   Meaning: 'Meaning',
   Origin: 'Origin',
   Nickname: 'Nickname',
@@ -79,24 +79,37 @@ export default function App() {
   const numberBirths = Object.values(sheetInfo).map((x) => x.NumberBirths)
   const cardInfo = sheetInfo[names[activeIndex]]
 
+  let TOTAL_CARDS = 1
+  let CARDS_REMAINING = rowsState?.filter(
+    (x) => x[userName] === undefined || x[userName] === ''
+  ).length
+
+  const [FILTERED_YES_COUNT, setFILTERED_YES_COUNT] = useState(0)
+  const [FILTERED_NO_COUNT, setFILTERED_NO_COUNT] = useState(0)
+  const [SESSION_YES_COUNT, setSESSION_YES_COUNT] = useState(0)
+  const [SESSION_NO_COUNT, setSESSION_NO_COUNT] = useState(0)
+
   useEffect(() => {
-    const user = getWindowLocationHashParam('user') || userNames[1]
+    const user = getWindowLocationHashParam('user') || userNames[0]
     setUserName(user)
     console.log('user', user)
     asyncAuth().then(({sheet, rows}) => {
-      const newRows = rows.filter((x) => {
-        console.log('x[user]', x[user])
-        // if (x.John !== x.Jennifer) {
-        //   debugger
-        // }
+      TOTAL_CARDS = rows.length
+      console.log('TOTAL_CARDS', TOTAL_CARDS)
+      const rowsFiltered = rows.filter((x) => {
         return !x[user] || x[user].length === 0
       })
-      console.log('newRows', newRows)
-      // const newRows = rows.filter((x) => x[userName] === '')
-      setRowsState(newRows)
+      CARDS_REMAINING = rowsFiltered.length
+
+      setFILTERED_YES_COUNT(rows.filter((x) => x[user] === 'YES').length)
+      console.log('FILTERED_YES_COUNT', FILTERED_YES_COUNT)
+      setFILTERED_NO_COUNT(rows.filter((x) => x[user] === 'NO').length)
+      console.log('FILTERED_NO_COUNT', FILTERED_NO_COUNT)
+
+      setRowsState(rowsFiltered)
       setSheetState(sheet)
       const tempInfo = {}
-      newRows.forEach((row) => {
+      rowsFiltered.forEach((row) => {
         tempInfo[row.Name] = {...row}
       })
       setSheetInfo(tempInfo)
@@ -180,6 +193,12 @@ export default function App() {
         console.log('AppContext', AppContext)
         console.log('AppContext', AppContext.current)
         updateSheetValues({key, userName, value}) // undefined, Voter 1, "NO"
+        if (value === 'YES') {
+          setSESSION_YES_COUNT((ps) => ps + 1)
+        }
+        if (value === 'NO') {
+          setSESSION_NO_COUNT((ps) => ps + 1)
+        }
         setActiveIndex((ps) => ps + 1)
         return
 
@@ -189,14 +208,19 @@ export default function App() {
   }
 
   // const remaining = Object.values(contextDict.givenNames).filter(
-  //   (x) => x['Voter 1'] === undefined
+  //   (x) => x[userName] === undefined
   // ).length
 
   const handleSearch = ({isNotListed, searchText}) => {
-    console.log('isNotListed, searchText', isNotListed, searchText)
     // If isNotListed, show the addItem button
     setIsSearchUnlisted(isNotListed)
     setSearchText(searchText)
+  }
+
+  const handleSearchSelect = ({value, option}) => {
+    const nameIndex = names.indexOf(value)
+    setSearchText('')
+    setActiveIndex(nameIndex)
   }
 
   return (
@@ -204,12 +228,14 @@ export default function App() {
       <div className="flex flex-col h-screen">
         <header className="text-center">
           <div id="login-wrapper" className="m-2">
-            <GSheetInfo />
-            <RadioButtonGroup
-              options={userNames}
+            {/* <GSheetInfo /> */}
+            <div className="flex justify-end text-sm">{userName}</div>
+            {/* <RadioButtonGroup
+              options={[userName]}
+              // options={userNames}
               value={userName}
               handleChange={handleChangeUser}
-            />
+            /> */}
           </div>
 
           <div>{/* <ListToWikiExtracts /> */}</div>
@@ -217,6 +243,7 @@ export default function App() {
           <div className="flex items-start justify-center m-8">
             <AutoCompleteSearch
               handleSearch={handleSearch}
+              handleSearchSelect={handleSearchSelect}
               options={names
                 .slice(0)
                 .sort()
@@ -224,8 +251,14 @@ export default function App() {
                   value: x,
                 }))}
             />
-            {isSearchUnlisted && searchText?.length && (
-              <AddName addSheetItem={addSheetItem} name={searchText} />
+            {isSearchUnlisted && searchText?.length ? (
+              <AddName
+                addSheetItem={addSheetItem}
+                handleSearchSelect={handleSearchSelect}
+                name={searchText}
+              />
+            ) : (
+              <></>
             )}
           </div>
         </header>
@@ -277,9 +310,9 @@ export default function App() {
             {/* Viewed: {i} */}
             {/* Remaining: {names.length - i} */}
             <div className="flex items-center">
-              <FaRegStar />{' '}
+              <FaBan />
               <span className="p-1 text-xs">
-                {/* {countItemsWhere(contextDict.givenNames, 'Voter 1', 'YES')} */}
+                {SESSION_NO_COUNT + FILTERED_NO_COUNT}
               </span>
             </div>
 
@@ -290,15 +323,14 @@ export default function App() {
                 <div className="z-10 w-4 h-5 bg-white rounded icon-border"></div>
               </div>
               <span className="p-1 text-xs">
-                {/* {remaining} */}
-                {/* {Object.keys(contextDict.givenNames).length} */}
+                {CARDS_REMAINING && CARDS_REMAINING}
               </span>
             </div>
 
             <div className="flex items-center">
-              <FaBan />
+              <FaRegStar />{' '}
               <span className="p-1 text-xs">
-                {/* {countItemsWhere(contextDict.givenNames, 'Voter 1', 'NO')} */}
+                {SESSION_YES_COUNT + FILTERED_YES_COUNT}
               </span>
             </div>
           </div>

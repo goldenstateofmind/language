@@ -18,10 +18,8 @@ const trans = (r, s) =>
   ].join(' ')
 
 function Deck(props) {
-  console.log('DECK props', props)
   const {cardInfo} = props
   const {contextDict, dispatchUpdateEvent} = useContext(AppContext)
-  // console.log('contextDict', contextDict)
   const {names, propsDict, access_token} = contextDict
 
   const [gone] = useState(() => new Set()) // The set flags all the cards that are flicked out
@@ -97,14 +95,20 @@ function Deck(props) {
   // const formatCardInfo = (name) => {
   const formatCardInfo = (name) => {
     const info = props?.cardInfo
-    console.log('info', info)
     let html = info.wikiExtractHtml || ''
     html = html.replaceAll('\\n', '').replaceAll('\\"', '"')
-    console.log('html', html)
+    if (info?.wikiUrl?.length > 0) {
+      html += `<a class="text-gray-400" href="${info.wikiUrl}">»</a>`
+    }
 
     {
       return (
         <div className="Card">
+          {info.Phonetic && (
+            <div className="italic text-center pronunciation">
+              ({info.Phonetic})
+            </div>
+          )}
           <div
             className="pt-4 text-sm extract_html"
             dangerouslySetInnerHTML={{__html: html}}
@@ -152,10 +156,10 @@ function Deck(props) {
           <animated.div
             {...bind(i)}
             style={{transform: interpolate([0, 1], trans)}}
-            className="flex flex-col items-center w-full h-full overflow-hidden bg-white border border-gray-400 rounded-lg ustify-center"
+            className="flex flex-col items-center justify-start w-full h-full overflow-hidden bg-white border border-gray-400 rounded-lg ustify-center"
           >
-            <div className="flex flex-col justify-center w-full h-20 text-center bg-gray-200">
-              <h2 className="CardName">{props.cardInfo.Name}</h2>
+            <div className="flex flex-col justify-center w-full h-20 overflow-auto text-center bg-gray-200">
+              <h2 className="h-full CardName">{props.cardInfo.Name}</h2>
             </div>
             <div className="w-full h-full p-4 mb-4 overflow-scroll text-sm select-none">
               {formatCardInfo(props.cardInfo.name)}

@@ -1,30 +1,12 @@
 import {AutoComplete} from 'antd'
 import 'antd/dist/antd.css'
 
-const AutoCompleteSearch = ({options, handleSearch, value}) => {
-  console.log('options', options)
-  // const [value, setValue] = useState('')
-  // const [options, setOptions] = useState([])
-
+const AutoCompleteSearch = ({options, handleSearch, handleSearchSelect}) => {
   const values = options.map((x) => x.value.toUpperCase())
 
   const onSearch = (searchText) => {
     const isNotListed = !values.includes(searchText.toUpperCase())
     handleSearch({isNotListed, searchText})
-
-    // setOptions(
-    //   !searchText
-    //     ? []
-    //     : [mockVal(searchText), mockVal(searchText, 2), mockVal(searchText, 3)]
-    // )
-  }
-
-  const onSelect = (data) => {
-    console.log('onSelect', data)
-  }
-
-  const onChange = (data) => {
-    // setValue(data)
   }
 
   return (
@@ -33,6 +15,7 @@ const AutoCompleteSearch = ({options, handleSearch, value}) => {
         options={options}
         style={{width: 200}}
         // onSelect={onSelect}
+        onSelect={(value, option) => handleSearchSelect({value, option})}
         onSearch={onSearch}
         placeholder="Search"
         filterOption={(inputValue, option) =>

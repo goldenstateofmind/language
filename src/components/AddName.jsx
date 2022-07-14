@@ -1,8 +1,10 @@
 import React from 'react'
 
-export default function AddName({addSheetItem, name}) {
+export default function AddName({addSheetItem, handleSearchSelect, name}) {
   const handleSubmit = (e) => {
+    // addSheetItem({name, yesOrNo: ''})
     addSheetItem({name, yesOrNo: 'YES'})
+    handleSearchSelect({value: name})
   }
 
   return (
