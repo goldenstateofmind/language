@@ -1,7 +1,12 @@
 import {AutoComplete} from 'antd'
 import 'antd/dist/antd.css'
 
-const AutoCompleteSearch = ({options, handleSearch, handleSearchSelect}) => {
+const AutoCompleteSearch = ({
+  options,
+  handleSearch,
+  handleSearchSelect,
+  value,
+}) => {
   const values = options.map((x) => x.value.toUpperCase())
 
   const onSearch = (searchText) => {
@@ -21,6 +26,7 @@ const AutoCompleteSearch = ({options, handleSearch, handleSearchSelect}) => {
         filterOption={(inputValue, option) =>
           option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
         }
+        value={value}
       />
     </>
   )

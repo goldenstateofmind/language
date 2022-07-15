@@ -8,7 +8,7 @@ export default function AddName({addSheetItem, handleSearchSelect, name}) {
   }
 
   return (
-    <div className="mx-4 AddName">
+    <div className="mx-4 whitespace-pre AddName">
       <button
         className="h-8 px-2 border border-gray-400 rounded "
         onClick={handleSubmit}

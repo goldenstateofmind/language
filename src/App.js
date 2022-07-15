@@ -8,6 +8,7 @@ import AutoCompleteSearch from './components/AutoCompleteSearch'
 import Deck from './components/Deck'
 import GSheetInfo from './components/GSheetInfo'
 import RadioButtonGroup from './components/RadioButtonGroup'
+import StatsPage from './components/StatsPage'
 import {client_email, private_key, SHEET_ID} from './const'
 import styles from './styles.module.css'
 import {getWindowLocationHashParam} from './utils/utils'
@@ -35,13 +36,8 @@ async function asyncAuth() {
   // const sheet = doc.sheetsByTitle['testReadWrite']
   // const sheet = doc.sheetsByIndex[0]
   const rows = await sheet.getRows() // can pass in { limit, offset }
-  console.log('rows', rows)
+  // console.log('rows', rows)
   return {sheet, rows}
-}
-
-const countItemsWhere = (obj, prop, val) => {
-  const counts = Object.values(obj).filter((x) => x[prop] === val)
-  return counts.length
 }
 
 const propsDict = {
@@ -66,28 +62,30 @@ export const AppContext = React.createContext({
 
 export default function App() {
   const [activeIndex, setActiveIndex] = useState(0)
-  const [sheetInfo, setSheetInfo] = useState({})
-  const [userName, setUserName] = useState(userNames[1])
-  const [rowsState, setRowsState] = useState([])
-  const [sheetState, setSheetState] = useState([])
   const [isSearchUnlisted, setIsSearchUnlisted] = useState(false)
+  const [rowsState, setRowsState] = useState([])
+  const [rowsUnfiltered, setRowsUnfiltered] = useState([])
   const [searchText, setSearchText] = useState('')
-
-  const names = Object.keys(sheetInfo) ?? []
-  // console.log(' --- names', names)
-  const activeName = names?.[activeIndex]
-  const numberBirths = Object.values(sheetInfo).map((x) => x.NumberBirths)
-  const cardInfo = sheetInfo[names[activeIndex]]
-
-  let TOTAL_CARDS = 1
-  let CARDS_REMAINING = rowsState?.filter(
-    (x) => x[userName] === undefined || x[userName] === ''
-  ).length
+  const [sheetInfo, setSheetInfo] = useState({})
+  const [sheetState, setSheetState] = useState({})
+  // const [sheetState, setSheetState] = useState([])
+  const [showStatsPage, setShowStatsPage] = useState(false)
+  const [userName, setUserName] = useState(userNames[1])
 
   const [FILTERED_YES_COUNT, setFILTERED_YES_COUNT] = useState(0)
   const [FILTERED_NO_COUNT, setFILTERED_NO_COUNT] = useState(0)
   const [SESSION_YES_COUNT, setSESSION_YES_COUNT] = useState(0)
   const [SESSION_NO_COUNT, setSESSION_NO_COUNT] = useState(0)
+
+  const names = Object.keys(sheetInfo) ?? []
+  const activeName = names?.[activeIndex]
+  const cardInfo = sheetInfo[names[activeIndex]]
+  const lastIndex = Object.keys(sheetInfo).length - 1
+
+  let TOTAL_CARDS = 1
+  let CARDS_REMAINING = rowsState?.filter(
+    (x) => x[userName] === undefined || x[userName] === ''
+  ).length
 
   useEffect(() => {
     const user = getWindowLocationHashParam('user') || userNames[0]
@@ -106,6 +104,8 @@ export default function App() {
       setFILTERED_NO_COUNT(rows.filter((x) => x[user] === 'NO').length)
       console.log('FILTERED_NO_COUNT', FILTERED_NO_COUNT)
 
+      setRowsUnfiltered(rows)
+      console.log('rows', rows)
       setRowsState(rowsFiltered)
       setSheetState(sheet)
       const tempInfo = {}
@@ -160,12 +160,13 @@ export default function App() {
     // const a = await sheetState.addRow(row)
     sheetState.addRow(row)
     setSearchText('')
+    console.log('activeIndex', activeIndex)
   }
 
-  const handleChangeUser = (e) => {
-    const {value} = e.target
-    dispatchUpdateEvent('SET_USER', {userName: value})
-  }
+  // const handleChangeUser = (e) => {
+  //   const {value} = e.target
+  //   dispatchUpdateEvent('SET_USER', {userName: value})
+  // }
 
   const dispatchUpdateEvent = (actionType, payload) => {
     const {key, prop, value, loginName, access_token} = payload
@@ -192,24 +193,25 @@ export default function App() {
       case 'UPDATE':
         console.log('AppContext', AppContext)
         console.log('AppContext', AppContext.current)
+        console.log('names', names)
+        console.log('names 0', names[0])
+        console.log('names -1', names[-1])
         updateSheetValues({key, userName, value}) // undefined, Voter 1, "NO"
+        console.log('key, userName, value', key, userName, value)
         if (value === 'YES') {
           setSESSION_YES_COUNT((ps) => ps + 1)
         }
         if (value === 'NO') {
           setSESSION_NO_COUNT((ps) => ps + 1)
         }
-        setActiveIndex((ps) => ps + 1)
+        console.log('lastIndex', lastIndex)
+        setActiveIndex((ps) => (ps < lastIndex ? ps + 1 : 0))
         return
 
       default:
         return
     }
   }
-
-  // const remaining = Object.values(contextDict.givenNames).filter(
-  //   (x) => x[userName] === undefined
-  // ).length
 
   const handleSearch = ({isNotListed, searchText}) => {
     // If isNotListed, show the addItem button
@@ -220,8 +222,74 @@ export default function App() {
   const handleSearchSelect = ({value, option}) => {
     const nameIndex = names.indexOf(value)
     setSearchText('')
-    setActiveIndex(nameIndex)
+    // setActiveIndex(nameIndex)
   }
+
+  const SearchAndDeck = (
+    <>
+      <div id="Search" className="flex items-start justify-center m-8">
+        <AutoCompleteSearch
+          handleSearch={handleSearch}
+          handleSearchSelect={handleSearchSelect}
+          value={{value: searchText}}
+          options={names
+            .slice(0)
+            .sort()
+            .map((x) => ({
+              value: x,
+            }))}
+        />
+        {isSearchUnlisted && searchText?.length ? (
+          <AddName
+            addSheetItem={addSheetItem}
+            handleSearchSelect={handleSearchSelect}
+            name={searchText}
+          />
+        ) : (
+          <></>
+        )}
+      </div>
+
+      <div
+        id="App"
+        className={`flex overflow-hidden h-ull items-center justify-center ${styles.container}`}
+      >
+        {/* <GoogleButton /> */}
+
+        <div
+          id="Deck-wrapper"
+          className="flex items-end justify-between w-full"
+        >
+          <div className="w-12 h-12 m-4">
+            <img
+              src={thumbsDownSVG}
+              onClick={() =>
+                dispatchUpdateEvent('UPDATE', {
+                  key: cardInfo.Name,
+                  userName,
+                  value: 'NO',
+                })
+              }
+            />
+          </div>
+          {cardInfo && <Deck cardInfo={cardInfo} />}
+          <div className="w-12 h-12 m-4">
+            <img
+              src={thumbsUpSVG}
+              onClick={() =>
+                dispatchUpdateEvent('UPDATE', {
+                  key: cardInfo.Name,
+                  userName,
+                  value: 'YES',
+                })
+              }
+            />
+          </div>
+          {/* <Deck cardInfo={cardInfo} handler={handler} /> */}
+        </div>
+      </div>
+    </>
+  )
 
   return (
     <AppContext.Provider value={{contextDict, dispatchUpdateEvent}}>
@@ -229,7 +297,11 @@ export default function App() {
         <header className="text-center">
           <div id="login-wrapper" className="m-2">
             {/* <GSheetInfo /> */}
-            <div className="flex justify-end text-sm">{userName}</div>
+            <div className="flex justify-end p-2 text-sm">
+              <button onClick={() => setShowStatsPage((ps) => !ps)}>
+                {userName}
+              </button>
+            </div>
             {/* <RadioButtonGroup
               options={[userName]}
               // options={userNames}
@@ -237,13 +309,26 @@ export default function App() {
               handleChange={handleChangeUser}
             /> */}
           </div>
+        </header>
 
-          <div>{/* <ListToWikiExtracts /> */}</div>
+        <main className="flex-1 overflow-auto">
+          {/* <div><ListToWikiExtracts /></div> */}
 
-          <div className="flex items-start justify-center m-8">
+          {showStatsPage ? (
+            <StatsPage
+              userName={userName}
+              otherUser={userNames.filter((x) => x !== userName)[0]}
+              rowsUnfiltered={rowsUnfiltered}
+            />
+          ) : (
+            SearchAndDeck
+          )}
+
+          {/* <div id="Search" className="flex items-start justify-center m-8">
             <AutoCompleteSearch
               handleSearch={handleSearch}
               handleSearchSelect={handleSearchSelect}
+              value={{value: searchText}}
               options={names
                 .slice(0)
                 .sort()
@@ -261,14 +346,11 @@ export default function App() {
               <></>
             )}
           </div>
-        </header>
-        <main className="h-full">
+
           <div
             id="App"
-            className={`flex overflow-hidden h-full items-center justify-center ${styles.container}`}
+            className={`flex overflow-hidden h-ull items-center justify-center ${styles.container}`}
           >
-            {/* <GoogleButton /> */}
-
             <div
               id="Deck-wrapper"
               className="flex items-end justify-between w-full"
@@ -298,10 +380,10 @@ export default function App() {
                   }
                 />
               </div>
-              {/* <Deck cardInfo={cardInfo} handler={handler} /> */}
             </div>
-          </div>
+          </div> */}
         </main>
+
         <footer>
           <div
             id="counter-wrapper"

@@ -5,3 +5,8 @@ export function getWindowLocationHashParam(name) {
     return params?.get(name)
   }
 }
+
+export const countItemsWhere = (obj, prop, val) => {
+  const counts = Object.values(obj).filter((x) => x[prop] === val)
+  return counts.length
+}
