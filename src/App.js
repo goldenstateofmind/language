@@ -76,6 +76,7 @@ export default function App() {
   const [FILTERED_NO_COUNT, setFILTERED_NO_COUNT] = useState(0)
   const [SESSION_YES_COUNT, setSESSION_YES_COUNT] = useState(0)
   const [SESSION_NO_COUNT, setSESSION_NO_COUNT] = useState(0)
+  const [flipped, setFlipped] = useState(0)
 
   const names = Object.keys(sheetInfo) ?? []
   const activeName = names?.[activeIndex]
@@ -124,6 +125,13 @@ export default function App() {
   }, [userName])
   // }, [Object.keys(givenNames)[0]])
 
+  const flip = () => {
+    setFlipped((ps) => !ps)
+    setTimeout(() => {
+      setFlipped((ps) => !ps)
+    }, 800)
+  }
+
   const [contextDict, setContextDict] = useState({
     // givenNames,
     names,
@@ -163,11 +171,6 @@ export default function App() {
     console.log('activeIndex', activeIndex)
   }
 
-  // const handleChangeUser = (e) => {
-  //   const {value} = e.target
-  //   dispatchUpdateEvent('SET_USER', {userName: value})
-  // }
-
   const dispatchUpdateEvent = (actionType, payload) => {
     const {key, prop, value, loginName, access_token} = payload
 
@@ -199,7 +202,16 @@ export default function App() {
         updateSheetValues({key, userName, value}) // undefined, Voter 1, "NO"
         console.log('key, userName, value', key, userName, value)
         if (value === 'YES') {
+          console.log('value', value)
           setSESSION_YES_COUNT((ps) => ps + 1)
+          const otherUser = userNames.filter((x) => x !== userName)[0]
+          console.log('otherUser', otherUser)
+          console.log('rowsUnfiltered', rowsUnfiltered)
+          const nameRow = rowsUnfiltered.find((x) => x.Name === key)
+          console.log('nameRow', nameRow)
+          if (nameRow[otherUser] === 'YES') {
+            flip()
+          }
         }
         if (value === 'NO') {
           setSESSION_NO_COUNT((ps) => ps + 1)
@@ -294,7 +306,7 @@ export default function App() {
   return (
     <AppContext.Provider value={{contextDict, dispatchUpdateEvent}}>
       <div className="flex flex-col h-screen">
-        <header className="text-center">
+        <header className="text-center bg-gray-100">
           <div id="login-wrapper" className="m-2">
             {/* <GSheetInfo /> */}
             <div className="flex justify-end p-2 text-sm">
@@ -323,74 +335,13 @@ export default function App() {
           ) : (
             SearchAndDeck
           )}
-
-          {/* <div id="Search" className="flex items-start justify-center m-8">
-            <AutoCompleteSearch
-              handleSearch={handleSearch}
-              handleSearchSelect={handleSearchSelect}
-              value={{value: searchText}}
-              options={names
-                .slice(0)
-                .sort()
-                .map((x) => ({
-                  value: x,
-                }))}
-            />
-            {isSearchUnlisted && searchText?.length ? (
-              <AddName
-                addSheetItem={addSheetItem}
-                handleSearchSelect={handleSearchSelect}
-                name={searchText}
-              />
-            ) : (
-              <></>
-            )}
-          </div>
-
-          <div
-            id="App"
-            className={`flex overflow-hidden h-ull items-center justify-center ${styles.container}`}
-          >
-            <div
-              id="Deck-wrapper"
-              className="flex items-end justify-between w-full"
-            >
-              <div className="w-12 h-12 m-4">
-                <img
-                  src={thumbsDownSVG}
-                  onClick={() =>
-                    dispatchUpdateEvent('UPDATE', {
-                      key: cardInfo.Name,
-                      userName,
-                      value: 'NO',
-                    })
-                  }
-                />
-              </div>
-              {cardInfo && <Deck cardInfo={cardInfo} />}
-              <div className="w-12 h-12 m-4">
-                <img
-                  src={thumbsUpSVG}
-                  onClick={() =>
-                    dispatchUpdateEvent('UPDATE', {
-                      key: cardInfo.Name,
-                      userName,
-                      value: 'YES',
-                    })
-                  }
-                />
-              </div>
-            </div>
-          </div> */}
         </main>
 
-        <footer>
+        <footer className="bg-gray-100">
           <div
             id="counter-wrapper"
             className="flex items-center self-end w-full h-24 stats justify-evenly"
           >
-            {/* Viewed: {i} */}
-            {/* Remaining: {names.length - i} */}
             <div className="flex items-center">
               <FaBan />
               <span className="p-1 text-xs">
@@ -410,7 +361,9 @@ export default function App() {
             </div>
 
             <div className="flex items-center">
-              <FaRegStar />{' '}
+              <div className={`flip-animation-${flipped}`}>
+                <FaRegStar onClick={flip} />{' '}
+              </div>
               <span className="p-1 text-xs">
                 {SESSION_YES_COUNT + FILTERED_YES_COUNT}
               </span>
