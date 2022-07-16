@@ -264,13 +264,13 @@ export default function App() {
 
       <div
         id="App"
-        className={`flex overflow-hidden h-ull items-center justify-center ${styles.container}`}
+        className={`flex overflow-hidden h-full items-center justify-center ${styles.container}`}
       >
         {/* <GoogleButton /> */}
 
         <div
           id="Deck-wrapper"
-          className="flex items-end justify-between w-full"
+          className="flex items-end justify-between w-full h-full overflow-hidden"
         >
           <div className="w-12 h-12 m-1">
             <img
