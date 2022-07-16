@@ -27,7 +27,7 @@ body,
 
 body {
   font-family: system-ui, sans-serif;
-  min-height: 100vh;
+  height: 100%;
   margin: 0;
 }
 
@@ -61,3 +61,19 @@ body {
     transform: rotateY(0deg) translateY(0px);
   }
 }
+
+/* div {
+  border: 2px dotted orange;
+  background-color: #ff03;
+  padding: 3px;
+}
+
+main {
+  border: 2px dotted purple;
+  background-color: #ff03;
+}
+
+#outer {
+  border: 3px dotted green;
+}
+ */

@@ -239,7 +239,7 @@ export default function App() {
 
   const SearchAndDeck = (
     <>
-      <div id="Search" className="flex items-start justify-center m-8">
+      <div id="Search" className="flex items-start justify-center m-1 mb-4">
         <AutoCompleteSearch
           handleSearch={handleSearch}
           handleSearchSelect={handleSearchSelect}
@@ -272,7 +272,7 @@ export default function App() {
           id="Deck-wrapper"
           className="flex items-end justify-between w-full"
         >
-          <div className="w-12 h-12 m-4">
+          <div className="w-12 h-12 m-1">
             <img
               src={thumbsDownSVG}
               onClick={() =>
@@ -285,7 +285,7 @@ export default function App() {
             />
           </div>
           {cardInfo && <Deck cardInfo={cardInfo} />}
-          <div className="w-12 h-12 m-4">
+          <div className="w-12 h-12 m-1">
             <img
               src={thumbsUpSVG}
               onClick={() =>
@@ -305,8 +305,9 @@ export default function App() {
 
   return (
     <AppContext.Provider value={{contextDict, dispatchUpdateEvent}}>
-      <div className="flex flex-col h-screen">
-        <header className="text-center bg-gray-100">
+      <div id="outer" className="flex flex-col justify-between h-full grow">
+        {/* <div className="flex flex-col min-h-full"> */}
+        <header className="sticky top-0 text-center bg-gray-100">
           <div id="login-wrapper" className="m-2">
             {/* <GSheetInfo /> */}
             <div className="flex justify-end p-2 text-sm">
@@ -323,7 +324,8 @@ export default function App() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto">
+        <main className="flex flex-col overflow-auto grow">
+          {/* <main className="flex-1 overflow-auto"> */}
           {/* <div><ListToWikiExtracts /></div> */}
 
           {showStatsPage ? (
@@ -337,10 +339,10 @@ export default function App() {
           )}
         </main>
 
-        <footer className="bg-gray-100">
+        <footer className="sticky bottom-0 p-2 bg-gray-100">
           <div
             id="counter-wrapper"
-            className="flex items-center self-end w-full h-24 stats justify-evenly"
+            className="flex items-center self-end w-full stats justify-evenly"
           >
             <div className="flex items-center">
               <FaBan />
