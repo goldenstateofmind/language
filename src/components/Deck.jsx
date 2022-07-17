@@ -161,7 +161,7 @@ function Deck(props) {
             <div className="flex flex-col justify-center w-full h-20 overflow-auto text-center bg-gray-200">
               <h2 className="h-full CardName">{props.cardInfo.Name}</h2>
             </div>
-            <div className="w-full h-full p-4 mb-4 overflow-auto text-sm select-none">
+            <div className="w-full h-full p-4 mb-4 overflow-auto text-sm select-none grow">
               {formatCardInfo(props.cardInfo.name)}
             </div>
           </animated.div>

@@ -264,13 +264,13 @@ export default function App() {
 
       <div
         id="App"
-        className={`flex overflow-hidden h-full items-center justify-center ${styles.container}`}
+        className={`flex overflow-hidden pb-4 h-full items-center justify-center ${styles.container}`}
       >
         {/* <GoogleButton /> */}
 
         <div
           id="Deck-wrapper"
-          className="flex items-end justify-between w-full h-full overflow-hidden"
+          className="flex items-end justify-between flex-auto w-full h-full overflow-hidden grow"
         >
           <div className="w-12 h-12 m-1">
             <img
@@ -305,7 +305,10 @@ export default function App() {
 
   return (
     <AppContext.Provider value={{contextDict, dispatchUpdateEvent}}>
-      <div id="outer" className="flex flex-col justify-between h-full grow">
+      <div
+        id="outer"
+        className="flex flex-col justify-between flex-auto h-full grow"
+      >
         {/* <div className="flex flex-col min-h-full"> */}
         <header className="sticky top-0 text-center bg-gray-100">
           <div id="login-wrapper" className="m-2">
@@ -324,7 +327,7 @@ export default function App() {
           </div>
         </header>
 
-        <main className="flex flex-col overflow-auto grow">
+        <main className="flex flex-col flex-auto overflow-auto grow">
           {/* <main className="flex-1 overflow-auto"> */}
           {/* <div><ListToWikiExtracts /></div> */}
 
