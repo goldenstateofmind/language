@@ -1,18 +1,27 @@
 import React, {useEffect, useState} from 'react'
-import {FaBan, FaRegStar} from 'react-icons/fa'
-// import givenNamesAll from './assets/givenNames.wiki.json'
+import {BsCalendar3, BsCalendar3Event} from 'react-icons/bs'
+import {FaVolumeUp} from 'react-icons/fa'
 import thumbsDownSVG from './assets/thumbs-down-crop.svg'
 import thumbsUpSVG from './assets/thumbs-up-crop.svg'
 import AddName from './components/AddName'
 import AutoCompleteSearch from './components/AutoCompleteSearch'
 import Deck from './components/Deck'
-import GSheetInfo from './components/GSheetInfo'
-import RadioButtonGroup from './components/RadioButtonGroup'
 import StatsPage from './components/StatsPage'
-import {client_email, private_key, SHEET_ID} from './const'
+import {
+  client_email,
+  LEFT_KEY,
+  private_key,
+  RIGHT_KEY,
+  SHEET_ID,
+  SHEET_TITLE,
+} from './const'
 import styles from './styles.module.css'
-import {getWindowLocationHashParam} from './utils/utils'
+import {dateStringYYYYMMDD, textToSpeech} from './utils/utils'
 const {GoogleSpreadsheet} = require('google-spreadsheet')
+
+// import sentences from './assets/en-es.10k.json'
+import sentences from './assets/en-es.10k.a.json'
+console.log('sentences', sentences)
 
 /* 
 ieFlat = ie.map(x => (x.split(',').map(x => x.trim()))).flat()
@@ -21,9 +30,10 @@ a = us.filter(x => !ieFlat.includes(x))
 git push https://<User Name>:<Token>@github.com/<User Name>/<Your Repository>.git
 
 git push https://goldenstateofmind:ghp_...qs6@github.com/goldenstateofmind/names.git
-*/
 
-const userNames = ['Jennifer', 'John']
+correct	incorrect	dates
+
+*/
 
 async function asyncAuth() {
   const doc = new GoogleSpreadsheet(SHEET_ID)
@@ -32,11 +42,8 @@ async function asyncAuth() {
   await doc.useServiceAccountAuth({client_email, private_key})
   await doc.loadInfo() // loads document properties and worksheets
 
-  const sheet = doc.sheetsByTitle['votes']
-  // const sheet = doc.sheetsByTitle['testReadWrite']
-  // const sheet = doc.sheetsByIndex[0]
+  const sheet = doc.sheetsByTitle[SHEET_TITLE]
   const rows = await sheet.getRows() // can pass in { limit, offset }
-  // console.log('rows', rows)
   return {sheet, rows}
 }
 
@@ -45,8 +52,6 @@ const propsDict = {
   Meaning: 'Meaning',
   Origin: 'Origin',
   Nickname: 'Nickname',
-  // 'Rank Eire': 'Rank IE',
-  // 'Rank USA': 'Rank US',
   Popularity: 'Rank IE',
   Quantile: 'percentile',
   Notable: 'Notable',
@@ -68,62 +73,87 @@ export default function App() {
   const [searchText, setSearchText] = useState('')
   const [sheetInfo, setSheetInfo] = useState({})
   const [sheetState, setSheetState] = useState({})
-  // const [sheetState, setSheetState] = useState([])
   const [showStatsPage, setShowStatsPage] = useState(false)
-  const [userName, setUserName] = useState(userNames[1])
 
-  const [FILTERED_YES_COUNT, setFILTERED_YES_COUNT] = useState(0)
-  const [FILTERED_NO_COUNT, setFILTERED_NO_COUNT] = useState(0)
-  const [SESSION_YES_COUNT, setSESSION_YES_COUNT] = useState(0)
-  const [SESSION_NO_COUNT, setSESSION_NO_COUNT] = useState(0)
+  const [isShowingFront, setIsShowingFront] = useState(true)
+  const [previousItems, setPreviousItems] = useState([])
+  // const [previousItems, setPreviousItems] = useState([['', '']])
+
+  const [allTimeCount, setAllTimeCount] = useState(0)
+  const [todayCount, setTodayCount] = useState(0)
   const [flipped, setFlipped] = useState(0)
 
+  const TODAY_YYYYMMDD = dateStringYYYYMMDD()
+
+  const cardKey = 'en'
+  const reverseKey = 'es_auto'
   const names = Object.keys(sheetInfo) ?? []
   const activeName = names?.[activeIndex]
   const cardInfo = sheetInfo[names[activeIndex]]
   const lastIndex = Object.keys(sheetInfo).length - 1
+  const activeSentences = sentences
+    .filter(({en, es}) =>
+      en
+        .split(' ')
+        .map((x) => x.toLowerCase())
+        .includes(activeName)
+    )
+    .slice(0, 2)
 
-  let TOTAL_CARDS = 1
-  let CARDS_REMAINING = rowsState?.filter(
-    (x) => x[userName] === undefined || x[userName] === ''
-  ).length
+  const cardBody = activeSentences.map((x) => {
+    const front = x.en
+      .split(' ')
+      .map((x) =>
+        x.toLowerCase() === activeName ? ['<em>', x, '</em>'].join('') : x
+      )
+      .join(' ')
+    const back = (
+      <div>
+        {x.es}{' '}
+        <button className="mx-2" onClick={() => textToSpeech({text: x.es})}>
+          <FaVolumeUp size={'0.75rem'} color="#333" />
+        </button>
+      </div>
+    )
+    console.log('back', back)
+    return [`<li>${front}</li>`, back]
+    // return [`<li>${front}</li>`, `<li>${back}</li>`]
+  })
+  const cardBodyFront = cardBody.map((x) => x[0]).join('')
+  const cardBodyBack = cardBody.map((x, xi) => <div key={x}>{x[1]}</div>)
+  console.log('cardBodyBack', cardBodyBack)
+  // const cardBodyBack = cardBody.map((x) => x[1]).join('')
 
   useEffect(() => {
-    const user = getWindowLocationHashParam('user') || userNames[0]
-    setUserName(user)
-    console.log('user', user)
     asyncAuth().then(({sheet, rows}) => {
-      TOTAL_CARDS = rows.length
-      console.log('TOTAL_CARDS', TOTAL_CARDS)
-      const rowsFiltered = rows.filter((x) => {
-        return !x[user] || x[user].length === 0
-      })
-      CARDS_REMAINING = rowsFiltered.length
+      // TOTAL_CARDS = rows.length
+      // console.log(' --- rows', rows)
 
-      setFILTERED_YES_COUNT(rows.filter((x) => x[user] === 'YES').length)
-      console.log('FILTERED_YES_COUNT', FILTERED_YES_COUNT)
-      setFILTERED_NO_COUNT(rows.filter((x) => x[user] === 'NO').length)
-      console.log('FILTERED_NO_COUNT', FILTERED_NO_COUNT)
-
-      setRowsUnfiltered(rows)
-      console.log('rows', rows)
-      setRowsState(rowsFiltered)
+      setRowsState(rows)
       setSheetState(sheet)
       const tempInfo = {}
-      rowsFiltered.forEach((row) => {
-        tempInfo[row.Name] = {...row}
+      rows.forEach((row) => {
+        tempInfo[row[cardKey]] = {...row}
       })
+      const allTimeIncorrect = rows.reduce((acc, cv) => {
+        return acc + Number(cv.incorrect)
+      }, 0)
+      const allTimeCorrect = rows.reduce((acc, cv) => {
+        return acc + Number(cv.incorrect)
+      }, 0)
+      const dateItems = rows
+        .map((row) => row['dates'].split(','))
+        .flat()
+        .filter((x) => x.includes(TODAY_YYYYMMDD))
+
+      setTodayCount(dateItems.length)
       setSheetInfo(tempInfo)
+      setAllTimeCount(allTimeIncorrect + allTimeCorrect)
       setContextDict((ps) => {
         return {...ps, givenNames: {...sheetInfo}}
       })
     })
-
-    // return () => {
-    //   second (callback)
-    // }
-  }, [userName])
-  // }, [Object.keys(givenNames)[0]])
+  }, [])
 
   const flip = () => {
     setFlipped((ps) => !ps)
@@ -144,9 +174,14 @@ export default function App() {
   })
 
   const updateSheetValues = async ({key, value}) => {
-    console.log(' - updateSheetValues - ', key, userName, value)
-    const row = rowsState.find((x) => x.Name === key)
-    row[userName] = value
+    console.log('value', value)
+    console.log('key', key)
+    // updateSheetValues({key: 'the', value: 'correct'})
+    const row = rowsState.find((x) => x[cardKey] === key)
+    row[value] = Number(row[value]) + 1 // coerce null or '' to 0
+    row.dates += ',' + TODAY_YYYYMMDD
+    console.log('row[value]', row[value])
+    console.log('row', row)
     const a = await row.save()
   }
 
@@ -159,65 +194,48 @@ export default function App() {
   }) => {
     const row = {
       Name: name,
-      [userName]: yesOrNo,
       Meaning: meaning,
       Nickname: nicknames,
       Origin: origin,
-      'Added By': userName,
     }
     // const a = await sheetState.addRow(row)
     sheetState.addRow(row)
     setSearchText('')
-    console.log('activeIndex', activeIndex)
   }
 
   const dispatchUpdateEvent = (actionType, payload) => {
     const {key, prop, value, loginName, access_token} = payload
+    // value will be LEFT_KEY or RIGHT_KEY ('incorrect', 'correct')
+    // key is the en word: "the"
 
     switch (actionType) {
-      case 'LOGIN':
-        setContextDict((ps) => {
-          console.log('ps', ps)
-          return {...ps, access_token, loginName}
-        })
-        return
-
-      case 'SET_USER':
-        const {userName} = payload
-        console.log('userName', userName)
-        // Update the url?
-        setUserName(userName)
-        setContextDict((ps) => {
-          console.log('ps', ps)
-          return {...ps, activeUser: userName}
-        })
-        return
-
       case 'UPDATE':
-        console.log('AppContext', AppContext)
-        console.log('AppContext', AppContext.current)
-        console.log('names', names)
-        console.log('names 0', names[0])
-        console.log('names -1', names[-1])
-        updateSheetValues({key, userName, value}) // undefined, Voter 1, "NO"
-        console.log('key, userName, value', key, userName, value)
-        if (value === 'YES') {
-          console.log('value', value)
-          setSESSION_YES_COUNT((ps) => ps + 1)
-          const otherUser = userNames.filter((x) => x !== userName)[0]
-          console.log('otherUser', otherUser)
-          console.log('rowsUnfiltered', rowsUnfiltered)
-          const nameRow = rowsUnfiltered.find((x) => x.Name === key)
-          console.log('nameRow', nameRow)
-          if (nameRow[otherUser] === 'YES') {
-            flip()
-          }
-        }
-        if (value === 'NO') {
-          setSESSION_NO_COUNT((ps) => ps + 1)
-        }
+        updateSheetValues({key, value})
+        setAllTimeCount((ps) => ps + 1)
+        setTodayCount((ps) => ps + 1)
         console.log('lastIndex', lastIndex)
-        setActiveIndex((ps) => (ps < lastIndex ? ps + 1 : 0))
+        console.log('cardInfo', cardInfo)
+        console.log('previousItems', previousItems)
+        setPreviousItems((ps) => {
+          const pair = [
+            cardInfo[cardKey],
+            <span>
+              {cardInfo[reverseKey]}
+              <button
+                className="mx-2"
+                onClick={() => textToSpeech({text: cardInfo[reverseKey]})}
+              >
+                <FaVolumeUp size={'0.75rem'} color="#333" />
+              </button>
+            </span>,
+          ]
+          console.log('pair', pair)
+          const cv = [pair, ...ps]
+          console.log('cv', cv)
+          return cv
+        })
+        setActiveIndex(Math.floor(Math.random() * names.length))
+        setIsShowingFront(true)
         return
 
       default:
@@ -231,10 +249,8 @@ export default function App() {
     setSearchText(searchText)
   }
 
-  const handleSearchSelect = ({value, option}) => {
-    const nameIndex = names.indexOf(value)
+  const handleSearchSelect = () => {
     setSearchText('')
-    // setActiveIndex(nameIndex)
   }
 
   const SearchAndDeck = (
@@ -264,40 +280,60 @@ export default function App() {
 
       <div
         id="App"
-        className={`flex overflow-hidden pb-4 h-full items-center justify-center ${styles.container}`}
+        className={`flex flex-col overflow-hidden pb-4 h-full items-center justify-center ${styles.container}`}
       >
         {/* <GoogleButton /> */}
-
+        <div
+          id="previous-items"
+          className="flex flex-col flex-1 w-full overflow-auto text-lg"
+        >
+          {previousItems.length > 0
+            ? previousItems.map(([x, y]) => (
+                <div className="flex mx-4 justify-evenly">
+                  <span className="flex justify-end mx-2 flex-one">{x}</span>
+                  <span className="text-gray-400">=</span>
+                  <span className="mx-2 flex-one">{y}</span>
+                </div>
+              ))
+            : null}
+        </div>
         <div
           id="Deck-wrapper"
-          className="flex items-end justify-between flex-auto w-full h-full overflow-hidden grow"
+          className="flex items-end justify-between flex-auto w-full h-full overflow-hidden flex-one"
         >
-          <div className="w-12 h-12 m-1">
+          <div id="thumbs-down" className="w-12 h-12 m-1">
             <img
               src={thumbsDownSVG}
               onClick={() =>
                 dispatchUpdateEvent('UPDATE', {
-                  key: cardInfo.Name,
-                  userName,
-                  value: 'NO',
+                  key: cardInfo[cardKey],
+                  value: LEFT_KEY,
                 })
               }
             />
           </div>
-          {cardInfo && <Deck cardInfo={cardInfo} />}
-          <div className="w-12 h-12 m-1">
+          {cardInfo && (
+            <Deck
+              cardInfo={cardInfo}
+              cardKey={cardKey}
+              reverseKey={reverseKey}
+              cardBodyFront={cardBodyFront}
+              cardBodyBack={cardBodyBack}
+              setIsShowingFront={setIsShowingFront}
+              isShowingFront={isShowingFront}
+            />
+          )}
+          <div id="thumbs-up" className="w-12 h-12 m-1">
             <img
               src={thumbsUpSVG}
               onClick={() =>
                 dispatchUpdateEvent('UPDATE', {
-                  key: cardInfo.Name,
-                  userName,
-                  value: 'YES',
+                  key: cardInfo[cardKey],
+                  value: RIGHT_KEY,
                 })
               }
             />
           </div>
-          {/* <Deck cardInfo={cardInfo} handler={handler} /> */}
         </div>
       </div>
     </>
@@ -309,21 +345,12 @@ export default function App() {
         id="outer"
         className="flex flex-col justify-between flex-auto h-full grow"
       >
-        {/* <div className="flex flex-col min-h-full"> */}
         <header className="sticky top-0 text-center bg-gray-100">
           <div id="login-wrapper" className="m-2">
             {/* <GSheetInfo /> */}
             <div className="flex justify-end p-2 text-sm">
-              <button onClick={() => setShowStatsPage((ps) => !ps)}>
-                {userName}
-              </button>
+              <button onClick={() => setShowStatsPage((ps) => !ps)}>i</button>
             </div>
-            {/* <RadioButtonGroup
-              options={[userName]}
-              // options={userNames}
-              value={userName}
-              handleChange={handleChangeUser}
-            /> */}
           </div>
         </header>
 
@@ -332,11 +359,7 @@ export default function App() {
           {/* <div><ListToWikiExtracts /></div> */}
 
           {showStatsPage ? (
-            <StatsPage
-              userName={userName}
-              otherUser={userNames.filter((x) => x !== userName)[0]}
-              rowsUnfiltered={rowsUnfiltered}
-            />
+            <StatsPage rowsUnfiltered={rowsUnfiltered} />
           ) : (
             SearchAndDeck
           )}
@@ -348,30 +371,17 @@ export default function App() {
             className="flex items-center self-end w-full stats justify-evenly"
           >
             <div className="flex items-center">
-              <FaBan />
-              <span className="p-1 text-xs">
-                {SESSION_NO_COUNT + FILTERED_NO_COUNT}
-              </span>
+              <BsCalendar3 />
+              <span className="p-1 text-xs">{allTimeCount}</span>
             </div>
 
-            <div className="flex items-center">
-              <div className="flex w-6 deck-of-cards">
-                <div className="absolute w-4 h-5 translate-x-2 bg-white rounded icon-border"></div>
-                <div className="absolute w-4 h-5 translate-x-1 bg-white rounded icon-border"></div>
-                <div className="z-10 w-4 h-5 bg-white rounded icon-border"></div>
-              </div>
-              <span className="p-1 text-xs">
-                {CARDS_REMAINING && CARDS_REMAINING}
-              </span>
-            </div>
+            {/* <div className="flex items-center">
+              <div className="flex text-xs"></div>
+            </div> */}
 
             <div className="flex items-center">
-              <div className={`flip-animation-${flipped}`}>
-                <FaRegStar onClick={flip} />{' '}
-              </div>
-              <span className="p-1 text-xs">
-                {SESSION_YES_COUNT + FILTERED_YES_COUNT}
-              </span>
+              <BsCalendar3Event />
+              <span className="p-1 text-xs">{todayCount}</span>
             </div>
           </div>
         </footer>

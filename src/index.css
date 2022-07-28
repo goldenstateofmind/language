@@ -62,11 +62,14 @@ body {
   }
 }
 
-/* div {
-  border: 2px dotted orange;
-  background-color: #ff03;
-  padding: 3px;
+/*
+
+* {
+  border: 1px dotted orange;
+  background-color: #2af2;
+  padding: 1px;
 }
+
 
 main {
   border: 2px dotted purple;
@@ -76,4 +79,14 @@ main {
 #outer {
   border: 3px dotted green;
 }
+
+.card-body * {
+  border: 1px dotted orange;
+  background: #2af3;
+}
  */
+
+.flex-one {
+  flex: 1;
+  /* flex: 1 0 auto; */
+}

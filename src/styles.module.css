@@ -16,7 +16,8 @@
 }
 
 .deck > div {
-  touch-action: none;
+  touch-action: auto;
+  /* touch-action: none; */
   background-color: white;
   background-size: auto 85%;
   background-repeat: no-repeat;

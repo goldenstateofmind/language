@@ -4,5 +4,13 @@ export const private_key =
 export const client_email =
   'flashcardsserviceaccount@flashcards-290716.iam.gserviceaccount.com'
 
+export const SHEET_ID = '1zgsUiCyWs9atl3NOWnIxFlCg8Da71yoxEL-YkgII_0Y/' // "Wordnet"
+// export const SHEET_ID = '11wMDpXQXCjsbMtWKKV7_ebUds-gYcxkxRZM-RFXuRNI/' // test spanish
 // export const SHEET_ID = '1e62PRVF_NLX5z1P0Km8jbumJ31vXUDaA8RmJhzISOpA' // spanish
-export const SHEET_ID = '15488X0n6WmgSafYLz58oVa8pTSY1HyJKjNhf-Jaonus' // b.names
+// export const SHEET_ID = '15488X0n6WmgSafYLz58oVa8pTSY1HyJKjNhf-Jaonus' // b.names
+
+// export const SHEET_TITLE = 'nature'
+export const SHEET_TITLE = 'FLASHCARDS'
+
+export const LEFT_KEY = 'incorrect'
+export const RIGHT_KEY = 'correct'
