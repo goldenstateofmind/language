@@ -25,8 +25,11 @@ export const textToSpeech = ({e, text, language}) => {
   // e.nativeEvent.stopImmediatePropagation()
   var msg = new SpeechSynthesisUtterance()
   var voices = speechSynthesis.getVoices()
+  console.log('voices', voices)
   const esEsFemale = voices.find((x) => x.voiceURI === 'Monica')
-  const esMxFemale = voices.find((x) => x.voiceURI === 'Paulina')
+  const esMxFemale = voices.find((x) => x.name === 'Paulina')
+  // const esMxFemale = voices.find((x) => x.lang === 'es-MX')
+  // const esMxFemale = voices.find((x) => x.voiceURI === 'Paulina')
   // var voices = window.speechSynthesis.getVoices()
   msg.voice = esMxFemale // Note: some voices don't support altering params
   // msg.voice = voices[10] // Note: some voices don't support altering params
