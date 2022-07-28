@@ -182,7 +182,7 @@ function Deck(props) {
       {springProps.map(({x, y}, i) => (
         <animated.div
           id="card"
-          className="flex items-center justify-center overflow-hidden h-72 zabsolute deck w-72 "
+          className="flex items-center justify-center mt-4 overflow-hidden h-72 zabsolute deck w-72"
           key={i}
           style={{x, y}}
         >
