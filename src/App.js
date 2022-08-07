@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import {BsCalendar3, BsCalendar3Event} from 'react-icons/bs'
 import {FaVolumeUp} from 'react-icons/fa'
+import {IoVolumeMuteOutline, IoVolumeHighOutline} from 'react-icons/io5'
 import thumbsDownSVG from './assets/thumbs-down-crop.svg'
 import thumbsUpSVG from './assets/thumbs-up-crop.svg'
 import AddName from './components/AddName'
@@ -21,7 +22,6 @@ const {GoogleSpreadsheet} = require('google-spreadsheet')
 
 // import sentences from './assets/en-es.10k.json'
 import sentences from './assets/en-es.10k.a.json'
-console.log('sentences', sentences)
 
 /* 
 ieFlat = ie.map(x => (x.split(',').map(x => x.trim()))).flat()
@@ -34,14 +34,12 @@ git push https://goldenstateofmind:ghp_...qs6@github.com/goldenstateofmind/names
 correct	incorrect	dates
 
 */
+const rando = (arr) => Math.floor(Math.random() * arr.length)
 
 async function asyncAuth() {
   const doc = new GoogleSpreadsheet(SHEET_ID)
-  console.log('doc', doc)
-
   await doc.useServiceAccountAuth({client_email, private_key})
   await doc.loadInfo() // loads document properties and worksheets
-
   const sheet = doc.sheetsByTitle[SHEET_TITLE]
   const rows = await sheet.getRows() // can pass in { limit, offset }
   return {sheet, rows}
@@ -67,17 +65,15 @@ export const AppContext = React.createContext({
 
 export default function App() {
   const [activeIndex, setActiveIndex] = useState(0)
-  const [isSearchUnlisted, setIsSearchUnlisted] = useState(false)
   const [rowsState, setRowsState] = useState([])
   const [rowsUnfiltered, setRowsUnfiltered] = useState([])
-  const [searchText, setSearchText] = useState('')
   const [sheetInfo, setSheetInfo] = useState({})
   const [sheetState, setSheetState] = useState({})
   const [showStatsPage, setShowStatsPage] = useState(false)
+  const [isAudioOn, setIsAudioOn] = useState(false)
 
   const [isShowingFront, setIsShowingFront] = useState(true)
   const [previousItems, setPreviousItems] = useState([])
-  // const [previousItems, setPreviousItems] = useState([['', '']])
 
   const [allTimeCount, setAllTimeCount] = useState(0)
   const [todayCount, setTodayCount] = useState(0)
@@ -90,6 +86,9 @@ export default function App() {
   const names = Object.keys(sheetInfo) ?? []
   const activeName = names?.[activeIndex]
   const cardInfo = sheetInfo[names[activeIndex]]
+  if (cardInfo?.[reverseKey]) {
+    cardInfo[reverseKey] = cardInfo[reverseKey].toLowerCase()
+  }
   const lastIndex = Object.keys(sheetInfo).length - 1
   const activeSentences = sentences
     .filter(({en, es}) =>
@@ -115,22 +114,23 @@ export default function App() {
         </button>
       </div>
     )
-    console.log('back', back)
     return [`<li>${front}</li>`, back]
     // return [`<li>${front}</li>`, `<li>${back}</li>`]
   })
   const cardBodyFront = cardBody.map((x) => x[0]).join('')
   const cardBodyBack = cardBody.map((x, xi) => <div key={x}>{x[1]}</div>)
-  console.log('cardBodyBack', cardBodyBack)
   // const cardBodyBack = cardBody.map((x) => x[1]).join('')
 
   useEffect(() => {
     asyncAuth().then(({sheet, rows}) => {
-      // TOTAL_CARDS = rows.length
-      // console.log(' --- rows', rows)
-
+      rows = rows.filter((x) => Number(x.Order) > 0 && Number(x.Order) <= 1)
+      console.log(
+        'rows',
+        rows.map((x) => x.Order)
+      )
       setRowsState(rows)
       setSheetState(sheet)
+      setActiveIndex(rando(rows))
       const tempInfo = {}
       rows.forEach((row) => {
         tempInfo[row[cardKey]] = {...row}
@@ -174,33 +174,10 @@ export default function App() {
   })
 
   const updateSheetValues = async ({key, value}) => {
-    console.log('value', value)
-    console.log('key', key)
-    // updateSheetValues({key: 'the', value: 'correct'})
     const row = rowsState.find((x) => x[cardKey] === key)
     row[value] = Number(row[value]) + 1 // coerce null or '' to 0
     row.dates += ',' + TODAY_YYYYMMDD
-    console.log('row[value]', row[value])
-    console.log('row', row)
     const a = await row.save()
-  }
-
-  const addSheetItem = async ({
-    name,
-    meaning = '',
-    nicknames = '',
-    origin = '',
-    yesOrNo,
-  }) => {
-    const row = {
-      Name: name,
-      Meaning: meaning,
-      Nickname: nicknames,
-      Origin: origin,
-    }
-    // const a = await sheetState.addRow(row)
-    sheetState.addRow(row)
-    setSearchText('')
   }
 
   const dispatchUpdateEvent = (actionType, payload) => {
@@ -213,28 +190,23 @@ export default function App() {
         updateSheetValues({key, value})
         setAllTimeCount((ps) => ps + 1)
         setTodayCount((ps) => ps + 1)
-        console.log('lastIndex', lastIndex)
-        console.log('cardInfo', cardInfo)
-        console.log('previousItems', previousItems)
         setPreviousItems((ps) => {
           const pair = [
             cardInfo[cardKey],
-            <span>
+            <span className="inline-flex align-middle">
               {cardInfo[reverseKey]}
               <button
                 className="mx-2"
                 onClick={() => textToSpeech({text: cardInfo[reverseKey]})}
               >
-                <FaVolumeUp size={'0.75rem'} color="#333" />
+                <FaVolumeUp size={'0.95rem'} color="#333" />
               </button>
             </span>,
           ]
-          console.log('pair', pair)
           const cv = [pair, ...ps]
-          console.log('cv', cv)
           return cv
         })
-        setActiveIndex(Math.floor(Math.random() * names.length))
+        setActiveIndex(rando(names))
         setIsShowingFront(true)
         return
 
@@ -243,39 +215,31 @@ export default function App() {
     }
   }
 
-  const handleSearch = ({isNotListed, searchText}) => {
-    // If isNotListed, show the addItem button
-    setIsSearchUnlisted(isNotListed)
-    setSearchText(searchText)
-  }
-
-  const handleSearchSelect = () => {
-    setSearchText('')
-  }
+  const calendarInfo = [0, 0, 0, 100, 134, 200, 43]
+  const DAILY_GOAL = 100
 
   const SearchAndDeck = (
     <>
-      <div id="Search" className="flex items-start justify-center m-1 mb-4">
-        <AutoCompleteSearch
-          handleSearch={handleSearch}
-          handleSearchSelect={handleSearchSelect}
-          value={{value: searchText}}
-          options={names
-            .slice(0)
-            .sort()
-            .map((x) => ({
-              value: x,
-            }))}
-        />
-        {isSearchUnlisted && searchText?.length ? (
-          <AddName
-            addSheetItem={addSheetItem}
-            handleSearchSelect={handleSearchSelect}
-            name={searchText}
-          />
-        ) : (
-          <></>
-        )}
+      <div
+        id="progress-calendar"
+        className="flex items-start justify-center m-1 mb-4"
+      >
+        {calendarInfo.map((x, xi) => {
+          let boxContent = ''
+          if (x >= DAILY_GOAL) {
+            boxContent = (
+              <div
+                className="checkmark draw"
+                style={{display: 'block', '--order': xi}}
+              ></div>
+            )
+          }
+          return (
+            <div className="relative flex items-center justify-center w-12 h-12 m-1 border">
+              {boxContent}
+            </div>
+          )
+        })}
       </div>
 
       <div
@@ -289,10 +253,12 @@ export default function App() {
         >
           {previousItems.length > 0
             ? previousItems.map(([x, y]) => (
-                <div className="flex mx-4 justify-evenly">
-                  <span className="flex justify-end mx-2 flex-one">{x}</span>
-                  <span className="text-gray-400">=</span>
-                  <span className="mx-2 flex-one">{y}</span>
+                <div className="flex mx-4 align-middle">
+                  <span className="flex justify-end w-1/3 mx-2">{x}</span>
+                  <span className="w-2/3">
+                    <span className="text-gray-400 ">=</span>
+                    <span className="inline-flex items-center mx-2">{y}</span>
+                  </span>
                 </div>
               ))
             : null}
@@ -314,13 +280,14 @@ export default function App() {
           </div>
           {cardInfo && (
             <Deck
+              cardBodyBack={cardBodyBack}
+              cardBodyFront={cardBodyFront}
               cardInfo={cardInfo}
               cardKey={cardKey}
-              reverseKey={reverseKey}
-              cardBodyFront={cardBodyFront}
-              cardBodyBack={cardBodyBack}
-              setIsShowingFront={setIsShowingFront}
+              isAudioOn={isAudioOn}
               isShowingFront={isShowingFront}
+              reverseKey={reverseKey}
+              setIsShowingFront={setIsShowingFront}
             />
           )}
           <div id="thumbs-up" className="w-12 h-12 m-1">
@@ -348,8 +315,10 @@ export default function App() {
         <header className="sticky top-0 text-center bg-gray-100">
           <div id="login-wrapper" className="m-2">
             {/* <GSheetInfo /> */}
-            <div className="flex justify-end p-2 text-sm">
-              <button onClick={() => setShowStatsPage((ps) => !ps)}>i</button>
+            <div id="audio-wrapper" className="flex justify-end p-2 text-lg">
+              <button onClick={() => setIsAudioOn((ps) => !ps)}>
+                {isAudioOn ? <IoVolumeHighOutline /> : <IoVolumeMuteOutline />}
+              </button>
             </div>
           </div>
         </header>

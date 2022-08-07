@@ -65,7 +65,7 @@ body {
 /*
 
 * {
-  border: 1px dotted orange;
+  border: 1px dotted green;
   background-color: #2af2;
   padding: 1px;
 }
@@ -89,4 +89,96 @@ main {
 .flex-one {
   flex: 1;
   /* flex: 1 0 auto; */
+}
+
+:root {
+  --brand-success: #5cb85c;
+  --loader-size: 2em;
+  --check-height: calc(var(--loader-size) / 2);
+  --check-width: calc(var(--check-height) / 2);
+  /* 
+  --check-left: (var(--loader-size) / 6 + var(--loader-size) / 12); 
+  --check-left: 2em;
+  */
+  --check-left: calc(var(--loader-size) / 6 + var(--loader-size) / 12);
+  --check-thickness: 3px;
+  --check-color: var(--brand-success);
+}
+
+.circle-loader {
+  margin-bottom: var(--loader-size) / 2;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-left-color: var(--check-color);
+  animation: loader-spin 1.2s infinite linear;
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  border-radius: 50%;
+  width: var(--loader-size);
+  height: var(--loader-size);
+}
+
+.load-complete {
+  -webkit-animation: none;
+  animation: none;
+  border-color: var(--check-color);
+  transition: border 500ms ease-out;
+}
+
+.checkmark.draw:after {
+  animation-duration: 300ms;
+  animation-delay: calc(var(--order) * 400ms);
+  animation-timing-function: ease;
+  animation-name: animate-checkmark;
+  animation-fill-mode: forwards;
+  transform: scaleX(-1) rotate(135deg);
+}
+
+.checkmark:after {
+  opacity: 0;
+  /* 
+  height: var(--check-height);
+  width: var(--check-width);
+  height: 0;
+  width: 0;
+  */
+  transform-origin: left top;
+  border-right: var(--check-thickness) solid var(--check-color);
+  border-top: var(--check-thickness) solid var(--check-color);
+  content: '';
+  left: var(--check-left);
+  top: var(--check-height);
+  position: absolute;
+}
+
+@keyframes loader-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes animate-checkmark {
+  0% {
+    height: 0;
+    width: 0;
+    opacity: 1;
+  }
+  20% {
+    height: 0;
+    width: var(--check-width);
+    opacity: 1;
+  }
+  40% {
+    height: var(--check-height);
+    width: var(--check-width);
+    opacity: 1;
+  }
+  100% {
+    height: var(--check-height);
+    width: var(--check-width);
+    opacity: 1;
+  }
 }

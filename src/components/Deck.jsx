@@ -25,12 +25,11 @@ function Deck(props) {
     cardBodyBack,
     cardInfo,
     cardKey,
+    isAudioOn,
     isShowingFront,
     reverseKey,
     setIsShowingFront,
   } = props
-  console.log('Deck props', props)
-  console.log(' --- cardBodyBack', cardBodyBack)
   const {contextDict, dispatchUpdateEvent} = useContext(AppContext)
   const {names, propsDict, access_token} = contextDict
 
@@ -53,15 +52,16 @@ function Deck(props) {
   }))
 
   const handleClickFlip = () => {
-    console.log('click')
-    setIsShowingFront((ps) => !ps)
-    console.log('isShowingFront', isShowingFront)
-    console.log('props.cardInfo[reverseKey]', props.cardInfo[reverseKey])
+    setIsShowingFront((ps) => {
+      if (ps === true && isAudioOn) {
+        textToSpeech({text: cardInfo[reverseKey]})
+      }
+      return !ps
+    })
   }
 
   // Create a gesture, we're interested in down-state, delta (current-pos - click-pos), direction and velocity
   const bind = useDrag((dragProps) => {
-    console.log('dragProps', dragProps)
     const {
       args: [index],
       active,
@@ -173,8 +173,8 @@ function Deck(props) {
   }
 
   const activeSideWord = isShowingFront
-    ? props.cardInfo[cardKey]
-    : props.cardInfo[reverseKey]
+    ? cardInfo[cardKey]
+    : cardInfo[reverseKey]
 
   // Now we're just mapping the animated values to our view, that's it. Btw, this component only renders once. :-)
   return (
@@ -194,13 +194,11 @@ function Deck(props) {
             {/* card-header */}
             <div className="flex flex-col justify-center w-full h-24 overflow-auto text-center bg-gray-200">
               <h2 className="h-full CardName">
-                {isShowingFront
-                  ? props.cardInfo[cardKey]
-                  : props.cardInfo[reverseKey]}
+                {isShowingFront ? cardInfo[cardKey] : cardInfo[reverseKey]}
                 {!isShowingFront && (
                   <button
                     className="mx-2"
-                    onClick={(e) => textToSpeech({e, text: activeSideWord})}
+                    onClick={() => textToSpeech({text: activeSideWord})}
                   >
                     <FaVolumeUp size={'1rem'} color="#333" />
                   </button>
