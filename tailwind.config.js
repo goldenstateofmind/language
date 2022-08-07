@@ -4,8 +4,8 @@ module.exports = {
     extend: {},
   },
   plugins: [],
-  purge: {
-    enabled: true,
-    content: ['./src/**/*.html'],
-  },
+  // purge: {
+  //   enabled: true,
+  //   content: ['./src/**/*.html'],
+  // },
 }
