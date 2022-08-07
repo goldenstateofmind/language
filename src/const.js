@@ -4,7 +4,8 @@ export const private_key =
 export const client_email =
   'flashcardsserviceaccount@flashcards-290716.iam.gserviceaccount.com'
 
-export const SHEET_ID = '1zgsUiCyWs9atl3NOWnIxFlCg8Da71yoxEL-YkgII_0Y/' // "Wordnet"
+export const SHEET_ID = '1dFrKTtC0k4ftyCYRuy11teyRZDUb2D4vuq1tmPgbRFE' // "FLASHCARDS", no auto-translate
+// export const SHEET_ID = '1zgsUiCyWs9atl3NOWnIxFlCg8Da71yoxEL-YkgII_0Y/' // "Wordnet"
 // export const SHEET_ID = '11wMDpXQXCjsbMtWKKV7_ebUds-gYcxkxRZM-RFXuRNI/' // test spanish
 // export const SHEET_ID = '1e62PRVF_NLX5z1P0Km8jbumJ31vXUDaA8RmJhzISOpA' // spanish
 // export const SHEET_ID = '15488X0n6WmgSafYLz58oVa8pTSY1HyJKjNhf-Jaonus' // b.names
